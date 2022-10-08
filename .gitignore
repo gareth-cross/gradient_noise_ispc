@@ -1,0 +1,15 @@
+build/
+.vscode
+.vs
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.sln*
+*.suo
+*.xcodeproj
+*.xcworkspace
+*.idea
+*.blend1
+__pycache__/
