@@ -17,8 +17,8 @@ add_subdirectory(src/gradient_noise)
 # Main project library
 set(EXE_TARGET "noise")
 add_executable(${EXE_TARGET} "src/main.cc")
-add_dependencies(${EXE_TARGET} gradient_noise stb fmt)
-target_link_libraries(${EXE_TARGET} gradient_noise stb fmt)
+add_dependencies(${EXE_TARGET} gradient_noise stb fmt glm)
+target_link_libraries(${EXE_TARGET} gradient_noise stb fmt glm)
 
 target_compile_features(${EXE_TARGET} PUBLIC cxx_std_17)
 if (MSVC)

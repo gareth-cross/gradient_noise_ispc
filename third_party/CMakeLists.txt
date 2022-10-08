@@ -7,3 +7,6 @@ target_include_directories(stb INTERFACE
 set(FMT_INSTALL OFF CACHE BOOL "" FORCE)
 set(FMT_TEST OFF CACHE BOOL "" FORCE)
 add_subdirectory(fmt)
+
+# add glm
+add_subdirectory(glm)
