@@ -16,12 +16,19 @@
 #pragma warning(pop)
 #endif  // _MSC_VER
 
+// Comment out to use the version that computes fibonacci sphere in gradient.
+#define SAMPLE_PRECOMPUTED_GRADIENTS
+
 // Alias to GLM type:
 typedef glm::vec3 float3;
 #define make_float3(x, y, z) \
   glm::vec3 { (x), (y), (z) }
 
 inline float dot(const float3& a, const float3& b) { return glm::dot(a, b); }
+
+// Need min() in C++
+#include <utility>
+#define min(a, b) std::min((a), (b))
 #else
 // Compiling as ISPC
 typedef float<3> float3;
@@ -39,13 +46,38 @@ inline unsigned int noise_hash(const int x, const int y, const int z, const unif
          permutation_table[(unsigned int)z & permutation_mask + permutation_axis_len * 2];
 }
 
+#if defined(__cplusplus)
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)  // Unreferenced formal parameter.
+#endif  // _MSC_VER
+#endif  // __cplusplus
+
 inline float3 gradient(const int x, const int y, const int z, const uniform unsigned int permutation_table[],
                        const uniform unsigned int permutation_axis_len, const uniform float gradients[]) {
   const unsigned int hash = noise_hash(x, y, z, permutation_table, permutation_axis_len);
+#if defined(SAMPLE_PRECOMPUTED_GRADIENTS)
+  // Sample gradient from the provided table.
   const unsigned int index = hash * 3;
   const float3 result = make_float3(gradients[index + 0], gradients[index + 1], gradients[index + 2]);
+#else
+  // Take the hashed integer, and use it an index into a fibonacci sphere.
+  // ISPC absolutely dominates this version. The speed increase is > 10x from non-simd version.
+  // Overall though, the table method is still faster.
+  const float k = hash + .5f;
+  const float cos_phi = 1.0f - 2.0f * k / (float)permutation_axis_len;  // bounds = (-1, 1)
+  const float sin_phi = sqrt(1.0f - cos_phi * cos_phi);                 // bounds = (0, 1)
+  const float theta = 3.14159265359f * (1 + sqrt(5.0f)) * k;
+  const float3 result = make_float3(cos(theta) * sin_phi, sin(theta) * sin_phi, cos_phi);
+#endif  // SAMPLE_PRECOMPUTED_GRADIENTS
   return result;
 }
+
+#if defined(__cplusplus)
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif  // _MSC_VER
+#endif  // __cplusplus
 
 inline float lerp(const float a, const float b, const float alpha) { return a * (1 - alpha) + b * alpha; }
 

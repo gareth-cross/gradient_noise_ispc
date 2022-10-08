@@ -168,7 +168,7 @@ function(add_ispc_library)
             target_compile_options(${example_NAME} PRIVATE -m64)
         endif()
     else()
-        target_compile_options(${example_NAME} PRIVATE /fp:fast /Oi)
+        target_compile_options(${example_NAME} PRIVATE /Oi)
     endif()
 
     # Common settings
